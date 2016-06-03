@@ -1,0 +1,107 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=7; IE=EmulateIE9; IE=EmulateIE10;"/>
+        <base href="http://developer.here.com/apiexplorer/examples/api-for-js/events/map-object-events-displayed.html" />
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+        <title>Nokia Maps API for JavaScript Example: Map Object events</title>
+        <meta name="description" content="Adding event listeners to objects on the map"/>
+        <meta name="keywords" content="mapobjectevents, map, display, object, events"/>
+        <!-- For scaling content for mobile devices, setting the viewport to the width of the device-->
+        <meta name=viewport content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+
+        <!-- By default we add ?with=all to load every package available, it's better to change this parameter to your use case. Options ?with=maps|positioning|places|placesdata|directions|datarendering|all -->
+        <script type="text/javascript" charset="UTF-8" src="http://api.maps.nokia.com/2.2.4/jsl.js?with=all"></script>
+
+
+    </head>
+    <body>
+        <div id="mapContainer" style="width:70%; height:70%; left:0; top:50; position: absolute;"></div>
+        <div id="uiContainer" style="left:0; top:0; position: absolute;" >HELLO</div>
+        <script type="text/javascript" id="exampleJsSource">
+// <![CDATA[    
+/////////////////////////////////////////////////////////////////////////////////////
+// Don't forget to set your API credentials
+//
+// Replace with your appId and token which you can obtain when you 
+// register on http://api.developer.nokia.com/ 
+//
+            nokia.Settings.set( "appId", "510iTbj64l3Q9cPv56Dg"); 
+            nokia.Settings.set( "authenticationToken", "sECOJD4NX-DfqbYXAX14Ug");
+
+/////////////////////////////////////////////////////////////////////////////////////   
+
+// Get the DOM node to which we will append the map
+var mapContainer = document.getElementById("mapContainer");
+// Create a map inside the map container DOM node
+var map = new nokia.maps.map.Display(mapContainer, {
+    // Initial center and zoom level of the map
+    center: [52.51, 13.4],
+    zoomLevel: 7,
+    // We add the behavior component to allow panning / zooming of the map
+    components:[new nokia.maps.map.component.Behavior()]
+});
+
+
+
+// Create a default listener for events that will just log a message.
+var defaultHandler = function (evt) {
+
+    if (evt.target instanceof nokia.maps.map.Marker) {
+
+        //console.log(evt);
+
+        var div = document.getElementById("uiContainer");
+        if (evt.type = "dragend"){
+            div.innerHTML = evt.type + " Formated: " + evt.target.coordinate  + " Decimal: " + evt.target.coordinate.latitude + ", " + evt.target.coordinate.longitude;
+        }
+        if (evt.type = "drag"){
+            var coordinate = map.pixelToGeo(evt.displayX + evt.target.anchor.x, evt.displayY + evt.target.anchor.y);
+            div.innerHTML = evt.type + " Formated: " + coordinate  + " Decimal: " + coordinate.latitude + ", " + coordinate.longitude;
+        }
+    }
+
+    if (evt.target instanceof nokia.maps.map.Spatial) {
+        /* Prevent other event listeners from being triggered
+         * For more details see  nokia.maps.dom.Event
+         */
+        evt.stopImmediatePropagation();
+    }
+};
+
+/* Adding event listeners one by one to a map object is not very
+ * efficient therefore we have created a shortcut method 
+ * to add multiple eventlisteners to an object using the "eventListener" property
+ */
+
+// Template with all listeners to be registered.
+var listeners = {
+    // type: [(listener, useCapture, namespaceURI)(, listener, useCapture, namespaceURI)(, ...)]
+    "dragstart": [defaultHandler, false, null],
+    "drag": [defaultHandler, false, null],
+    "dragend": [defaultHandler, false, null]
+}; 
+
+// Create image marker object
+var imageMarker = new nokia.maps.map.Marker(
+    [52.88745, 13.43246],
+    {
+        $name: "Image Marker",
+        eventListener: listeners,
+        icon: "../../res/markerHouse.png",
+        anchor: new nokia.maps.util.Point(35, 89),
+        draggable: true
+    }
+);
+
+// Add event listeners to the marker
+imageMarker.addListeners(listeners);
+map.objects.add(imageMarker);
+
+
+// ]]>
+        </script>
+    </body>
+</html>
